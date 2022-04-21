@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "npm" 
+    directory: "/" 
+    schedule:
+      interval: "monthly"
+      day: "tuesday"
+      time: "08:00"
+      timezone: "Europe/London"
+    reviewers:
+      - tanyapowell
+      - genyus
+    open-pull-requests-limit: 10
