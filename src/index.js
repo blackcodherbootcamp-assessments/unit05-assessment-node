@@ -11,6 +11,7 @@ const todoFilePath = process.env.BASE_JSON_PATH;
 //Read todos from todos.json into variable
 let todos = require(__dirname + todoFilePath);
 
+app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.raw());
@@ -19,10 +20,11 @@ app.use(bodyParser.json());
 app.use("/content", express.static(path.join(__dirname, "public")));
 
 app.get("/", (_, res) => {
-  /*
-  res.sendFile("./public/index.html", { root: __dirname });
-  */
-  res.status(501).end();
+  res.sendFile("./public/index.html", { root: __dirname }, (err) => {
+    if (err) {
+      console.log(err);
+    }
+  });
 });
 
 app.get("/todos", (_, res) => {
