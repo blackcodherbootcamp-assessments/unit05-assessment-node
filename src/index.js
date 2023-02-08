@@ -8,8 +8,8 @@ const bodyParser = require("body-parser");
 const { v4: uuidv4 } = require("uuid");
 const todoFilePath = process.env.BASE_JSON_PATH;
 
-//Read todos from todos.json into variable
-const getTodos = () => require(__dirname + todoFilePath);
+// Read todos from todos.json into variable
+const getTodos = () => require(path.join(__dirname, todoFilePath));
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
