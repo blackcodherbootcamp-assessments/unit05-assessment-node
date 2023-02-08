@@ -72,6 +72,15 @@ app.get("/todos/overdue", (req, res) => {
 });
 
 //Add GET request with path '/todos/completed'
+app.get("/todos/completed", (req, res) => {
+  try {
+    const todos = getTodos().filter((todo) => todo.completed === true);
+
+    res.setHeader("Content-Type", "application/json").send(todos);
+  } catch (err) {
+    next(err);
+  }
+});
 
 //Add POST request with path '/todos'
 
