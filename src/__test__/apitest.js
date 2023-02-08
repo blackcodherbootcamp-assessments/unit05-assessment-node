@@ -52,31 +52,39 @@ before(async () => {
 
 describe("GET /", function () {
   let path = "/";
-  it("should be listening and have the content-type html", async () => {
-    await request(api).get(path).expect("Content-Type", /html/).expect(200);
+  it("should be listening and respond with the content type set to text/html", () => {
+    return request(api)
+      .get(path)
+      .expect("Content-Type", /text\/html/)
+      .expect(200);
   });
 });
 
-describe("GET /todos", function () {
+describe("GET /todos", async function () {
   let path = "/todos";
-  it("should be listening and have the content-type json", async () => {
-    await request(api).get(path).expect("Content-Type", /json/).expect(200);
+  it("should be listening and respond with the content type set to application/json", async () => {
+    await request(api)
+      .get(path)
+      .expect("Content-Type", /application\/json/)
+      .expect(200);
   });
 
-  it("should return array of all todos", function (done) {
-    request(api)
+  it("should return array of all todos", async () => {
+    await request(api)
       .get(path)
-      .end((err, res) => {
+      .expect((res) => {
         expect(res.body).to.be.an("array");
-        done();
       });
   });
 });
 
 describe("GET /todos/overdue", function () {
   let path = "/todos/overdue";
-  it("should be listening and have the content-type json", async () => {
-    await request(api).get(path).expect("Content-Type", /json/).expect(200);
+  it("should be listening and respond with the content type set to application/json", async () => {
+    await request(api)
+      .get(path)
+      .expect("Content-Type", /application\/json/)
+      .expect(200);
   });
 
   it("should return array of overdue todos", async () => {
@@ -93,8 +101,8 @@ describe("GET /todos/overdue", function () {
 
 describe("GET /todos/completed", function () {
   let path = "/todos/completed";
-  it("should be listening and have the content-type json", async () => {
-    await request(api).get(path).expect("Content-Type", /json/).expect(200);
+  it("should be listening and respond with the content type set to application/json", async () => {
+    await request(api).get(path).expect("Content-Type", /application\/json/).expect(200);
   });
 
   it("should return array of completed todos", async () => {
