@@ -131,7 +131,7 @@ app.patch("/todos/:id", (req, res) => {
       todo.name = req.body.name ?? todo.name;
       todo.due = req.body.due ?? todo.due;
       todo.completed = req.body.completed ?? todo.completed;
-      res.send(todo);
+      res.setHeader("Content-Type", "application/json").send(todo);
     } else {
       res.status(404).send("Todo not found");
     }
