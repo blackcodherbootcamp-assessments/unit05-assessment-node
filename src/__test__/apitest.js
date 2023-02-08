@@ -116,15 +116,24 @@ describe("GET /todos/overdue", function () {
 describe("GET /todos/completed", function () {
   let path = "/todos/completed";
   it("should be listening and respond with the content type set to application/json", async () => {
-    await request(api).get(path).expect("Content-Type", /application\/json/).expect(200);
+    await request(api)
+      .get(path)
+      .expect("Content-Type", /application\/json/)
+      .expect(200);
   });
 
   it("should return array of completed todos", async () => {
     await request(api)
       .get(path)
       .expect((res) => {
-        let completed = [...new Set(res.body)];
-        completed.forEach(function (todo) {
+        const actual = [...new Set(res.body)];
+        const expected = getTodos().filter(
+          (todo) => todo.completed === true
+        );
+
+        expect(actual).to.be.an("array");
+        expect(actual).to.have.lengthOf(expected.length);
+        actual.forEach(function (todo) {
           expect(todo.completed).to.be.true;
         });
       });
