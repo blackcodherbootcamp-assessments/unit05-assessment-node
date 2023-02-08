@@ -181,6 +181,26 @@ app.post("/todos/:id/undo", (req, res) => {
 });
 
 //Add DELETE request with path '/todos/:id
+app.delete("/todos/:id", (req, res) => {
+  try {
+    const id = req.params.id;
+    const todos = getTodos();
+    const index = todos.findIndex((todo) => todo.id === id);
+
+    if (index >= 0) {
+      todos.splice(index, 1)
+      saveTodos(todos)
+        .then((value) => {
+          res.send();
+        })
+        .catch((err) => next(err));
+    } else {
+      res.status(404).send("Todo not found");
+    }
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Attach error handling middleware after all regular middleware
 app.use(errorLogger);
