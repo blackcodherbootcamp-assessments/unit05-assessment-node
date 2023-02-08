@@ -121,6 +121,24 @@ app.post("/todos", (req, res) => {
 });
 
 //Add PATCH request with path '/todos/:id
+app.patch("/todos/:id", (req, res) => {
+  try {
+    const id = req.params.id;
+    const todos = getTodos();
+    const todo = todos.find((todo) => todo.id === id);
+
+    if (todo) {
+      todo.name = req.body.name ?? todo.name;
+      todo.due = req.body.due ?? todo.due;
+      todo.completed = req.body.completed ?? todo.completed;
+      res.send(todo);
+    } else {
+      res.status(404).send("Todo not found");
+    }
+  } catch (err) {
+    next(err);
+  }
+});
 
 //Add POST request with path '/todos/:id/complete
 
