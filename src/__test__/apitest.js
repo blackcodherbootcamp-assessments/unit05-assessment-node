@@ -216,6 +216,13 @@ describe("POST /todos/:id/complete", function () {
       .expect(200);
   });
 
+  it("should return 404 (Not Found) when invalid id is sent to complete", async () => {
+    await request(api)
+      .post(path + "/0xxx1235/complete")
+      .send()
+      .expect(404);
+  });
+
   it("should contain COMPLETED todo with id '19d539a11189-bb60-u663-8sd4-01507581'", async () => {
     await request(api)
       .get(path + "/completed")
@@ -243,11 +250,11 @@ describe("POST /todos/:id/undo", function () {
       .expect(200);
   });
 
-  it("should return 400 (Bad Request) when invalid id is sent to undo", async () => {
+  it("should return 404 (Not Found) when invalid id is sent to undo", async () => {
     await request(api)
       .post(path + "/0xxx1235/undo")
       .send()
-      .expect(400);
+      .expect(404);
   });
 
   it("should contain INCOMPLETE todo with id '01507581-9d12-a4c4-06bb-19d539a11189'", async () => {
@@ -292,9 +299,9 @@ describe("DELETE /todos/:id", function () {
       });
   });
 
-  it("should return 400 (Bad Request) when invalid id is sent to DELETE", async () => {
+  it("should return 404 (Not Found) when invalid id is sent to DELETE", async () => {
     await request(api)
       .delete(path + "/xxx123")
-      .expect(400);
+      .expect(404);
   });
 });
