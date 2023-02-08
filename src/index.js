@@ -59,6 +59,17 @@ app.get("/todos", (req, res) => {
 });
 
 //Add GET request with path '/todos/overdue'
+app.get("/todos/overdue", (req, res) => {
+  try {
+    const todos = getTodos().filter(
+      (todo) => new Date(todo.due) < new Date() && todo.completed === false
+    );
+
+    res.setHeader("Content-Type", "application/json").send(todos);
+  } catch (err) {
+    next(err);
+  }
+});
 
 //Add GET request with path '/todos/completed'
 
