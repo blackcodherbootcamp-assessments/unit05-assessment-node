@@ -159,6 +159,22 @@ app.post("/todos/:id/complete", (req, res) => {
 });
 
 //Add POST request with path '/todos/:id/undo
+app.post("/todos/:id/undo", (req, res) => {
+  try {
+    const id = req.params.id;
+    const todos = getTodos();
+    const todo = todos.find((todo) => todo.id === id);
+
+    if (todo) {
+      todo.completed = false;
+      res.setHeader("Content-Type", "application/json").send(todo);
+    } else {
+      res.status(404).send("Todo not found");
+    }
+  } catch (err) {
+    next(err);
+  }
+});
 
 //Add DELETE request with path '/todos/:id
 
