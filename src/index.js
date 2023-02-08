@@ -48,12 +48,14 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/todos", (_, res) => {
-  /*
-  res.header("Content-Type","application/json");
-  res.sendFile(todoFilePath, { root: __dirname });
-  */
-  res.status(501).end();
+app.get("/todos", (req, res) => {
+  try {
+    const todos = getTodos();
+
+    res.setHeader("Content-Type", "application/json").send(todos);
+  } catch (err) {
+    next(err);
+  }
 });
 
 //Add GET request with path '/todos/overdue'
