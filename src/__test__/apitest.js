@@ -5,6 +5,7 @@ const request = require("supertest");
 const { expect } = require("chai");
 const api = require("../index.js");
 const dateNow = Date.now();
+const jsonPath = path.join(__dirname, "..", process.env.BASE_JSON_PATH);
 
 before(async () => {
   const defaultTodos = [
@@ -39,7 +40,7 @@ before(async () => {
     todo.created = due.toISOString();
   });
   await fs.writeFile(
-    path.join(__dirname, "/test-todos.json"),
+    jsonPath,
     JSON.stringify(defaultTodos, null, 2) + "\n",
     (err) => {
       if (err) {
