@@ -97,16 +97,17 @@ describe("GET /todos/overdue", function () {
     await request(api)
       .get(path)
       .expect((res) => {
+        const now = new Date();
         const actual = [...new Set(res.body)];
         const expected = getTodos().filter(
-          (todo) => new Date(todo.due) < new Date() && todo.completed === false
+          (todo) => new Date(todo.due) < now && todo.completed === false
         );
 
         expect(actual).to.be.an("array");
         expect(actual).to.have.lengthOf(expected.length);
         actual.forEach(function (overdue, index) {
-          expect(new Date(overdue.due) < dateNow);
-          expect(overdue.completed) === false;
+          expect(new Date(overdue.due)).to.be.lessThan(now);
+          expect(overdue.completed).to.be.false;
         });
       });
   });
