@@ -6,6 +6,11 @@ const { expect } = require("chai");
 const api = require("../index.js");
 const dateNow = Date.now();
 const jsonPath = path.join(__dirname, "..", process.env.BASE_JSON_PATH);
+const getTodos = () => {
+  const contents = fs.readFileSync(jsonPath, { encoding: "utf-8" });
+
+  return JSON.parse(contents);
+};
 
 before(async () => {
   const defaultTodos = [
@@ -92,9 +97,16 @@ describe("GET /todos/overdue", function () {
     await request(api)
       .get(path)
       .expect((res) => {
-        let overdues = [...new Set(res.body)];
-        overdues.forEach(function (overdue, index) {
+        const actual = [...new Set(res.body)];
+        const expected = getTodos().filter(
+          (todo) => new Date(todo.due) < new Date() && todo.completed === false
+        );
+
+        expect(actual).to.be.an("array");
+        expect(actual).to.have.lengthOf(expected.length);
+        actual.forEach(function (overdue, index) {
           expect(new Date(overdue.due) < dateNow);
+          expect(overdue.completed) === false;
         });
       });
   });
