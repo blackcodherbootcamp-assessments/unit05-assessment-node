@@ -11,6 +11,20 @@ const todoFilePath = process.env.BASE_JSON_PATH;
 // Read todos from todos.json into variable
 const getTodos = () => require(path.join(__dirname, todoFilePath));
 
+// Save todos to disk
+const saveTodos = async (todos) => {
+  await fs.writeFile(
+    path.join(__dirname, todoFilePath),
+    JSON.stringify(todos, null, 2) + "\n",
+    (err) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+    }
+  );
+};
+
 // Error handling Middleware function for logging the error message
 const errorLogger = (error, request, response, next) => {
   console.log(`error: ${error.message}`);
@@ -83,6 +97,28 @@ app.get("/todos/completed", (req, res) => {
 });
 
 //Add POST request with path '/todos'
+app.post("/todos", (req, res) => {
+  const newTodo = req.body;
+
+  if (!newTodo.name || !newTodo.due) {
+    res.status(400).send("Invalid request");
+  } else {
+    const todos = getTodos();
+
+    newTodo.id = uuidv4();
+    newTodo.completed = false;
+    newTodo.created = new Date().toISOString();
+    todos.push(newTodo);
+    saveTodos(todos)
+      .then((value) => {
+        res
+          .setHeader("Content-Type", "application/json")
+          .status(201)
+          .send(newTodo);
+      })
+      .catch((err) => next(err));
+  }
+});
 
 //Add PATCH request with path '/todos/:id
 
