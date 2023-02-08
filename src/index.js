@@ -39,10 +39,11 @@ app.use(express.raw());
 app.use(bodyParser.json());
 app.use("/content", express.static(path.join(__dirname, "public")));
 
-app.get("/", (_, res) => {
+app.get("/", (req, res) => {
   res.sendFile("./public/index.html", { root: __dirname }, (err) => {
     if (err) {
       console.log(err);
+      next(err);
     }
   });
 });
