@@ -21,7 +21,7 @@
     "uuid": "^8.3.2"
   },
   "scripts": {
-    "start": "nodemon src/index.js",
+    "start": "nodemon src/server.js",
     "test": "env BASE_JSON_PATH='/__test__/test-todos.json' mocha 'src/__test__/apitest.js'"
   },
   "devDependencies": {

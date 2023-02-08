@@ -9,7 +9,7 @@ const { v4: uuidv4 } = require("uuid");
 const todoFilePath = process.env.BASE_JSON_PATH;
 
 //Read todos from todos.json into variable
-let todos = require(__dirname + todoFilePath);
+const getTodos = () => require(__dirname + todoFilePath);
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
@@ -48,9 +48,5 @@ app.get("/todos", (_, res) => {
 //Add POST request with path '/todos/:id/undo
 
 //Add DELETE request with path '/todos/:id
-
-app.listen(port, function () {
-  console.log(`Node server is running... http://localhost:${port}`);
-});
 
 module.exports = app;
