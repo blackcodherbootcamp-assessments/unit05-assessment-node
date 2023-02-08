@@ -2,51 +2,50 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const request = require("supertest");
-const chai = require("chai");
+const { expect } = require("chai");
 const api = require("../index.js");
 const dateNow = Date.now();
-expect = chai.expect;
 
-after(async () => {
-  const content = `[
+before(async () => {
+  const defaultTodos = [
     {
-      "id": "01507581-9d12-a4c4-06bb-19d539a11189",
-      "name": "Learn to use Adobe Photoshop",
-      "created": "2021-10-20T18:25:43.511Z",
-      "due": "2022-11-23T23:05:03.352Z",
-      "completed": true
+      id: "01507581-9d12-a4c4-06bb-19d539a11189",
+      name: "Learn to use Adobe Photoshop",
+      completed: true,
     },
     {
-      "id": "19d539a11189-bb60-u663-8sd4-01507581",
-      "name": "Buy 2 Cartons of Milk",
-      "created": "2021-10-20T18:25:43.511Z",
-      "due": "2021-11-23T23:05:03.352Z",
-      "completed": true
+      id: "19d539a11189-bb60-u663-8sd4-01507581",
+      name: "Buy 2 Cartons of Milk",
+      completed: true,
     },
     {
-      "id": "19d539a11189-4a60-3a4c-4434-01507581",
-      "name": "Learn to juggle",
-      "created": "2021-11-23T14:35:01.752Z",
-      "due": "2021-10-20T18:25:43.511Z",
-      "completed": false
+      id: "19d539a11189-4a60-3a4c-4434-01507581",
+      name: "Learn to juggle",
+      completed: false,
     },
     {
-      "id": "7895as2s4c-4a60-3a4c-7acc-895as1cc85",
-      "name": "Renew Passport",
-      "created": "2021-11-23T14:35:01.752Z",
-      "due": "2029-02-20T18:25:43.511Z",
-      "completed": false
-    }
-  ]`;
-  fs.writeFile(
+      id: "7895as2s4c-4a60-3a4c-7acc-895as1cc85",
+      name: "Renew Passport",
+      completed: false,
+    },
+  ];
+
+  defaultTodos.forEach((todo, i) => {
+    const due = new Date(dateNow);
+
+    due.setUTCDate(due.getUTCDate() + (i + 2 - defaultTodos.length) * 7);
+    todo.due = due.toISOString();
+    due.setUTCDate(due.getUTCDate() - 7);
+    todo.created = due.toISOString();
+  });
+  await fs.writeFile(
     path.join(__dirname, "/test-todos.json"),
-    JSON.stringify(JSON.parse(content), null, 2) + "\n",
+    JSON.stringify(defaultTodos, null, 2) + "\n",
     (err) => {
       if (err) {
         console.error(err);
         return;
       }
-      process.exit(0);
     }
   );
 });
