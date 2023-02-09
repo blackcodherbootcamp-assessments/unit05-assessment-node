@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const request = require("supertest");
 const { expect } = require("chai");
-const api = require("../index.js");
+const api = require("../app.js");
 const dateNow = Date.now();
 const jsonPath = path.join(__dirname, "..", process.env.BASE_JSON_PATH);
 const getTodos = () => {
