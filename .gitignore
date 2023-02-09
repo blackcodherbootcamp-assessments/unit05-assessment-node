@@ -1,5 +1,11 @@
 src/__test__/test-todos.json
 
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
 # Logs
 logs
 *.log
@@ -72,7 +78,7 @@ typings/
 
 # dotenv environment variables file
 .env
-.env.test
+.env.*
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
