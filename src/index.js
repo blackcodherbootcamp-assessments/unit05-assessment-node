@@ -3,7 +3,6 @@ const fs = require("fs");
 const express = require("express");
 const app = express();
 const path = require("path");
-const port = 8080;
 const bodyParser = require("body-parser");
 const { v4: uuidv4 } = require("uuid");
 const todoFilePath = process.env.BASE_JSON_PATH;
