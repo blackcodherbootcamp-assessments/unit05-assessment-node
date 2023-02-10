@@ -7,9 +7,26 @@ const bodyParser = require("body-parser");
 const { v4: uuidv4 } = require("uuid");
 const todoFilePath = process.env.BASE_JSON_PATH;
 
+// Read todos from todos.json into variable
+const getTodos = async () => {
+  return new Promise((resolve, reject) =>
+    fs.readFile(
+      path.join(__dirname, todoFilePath),
+      { encoding: "utf-8" },
+      (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(JSON.parse(data));
+        }
+      }
+    )
+  );
+};
+
 // Save todos to disk
 const saveTodos = async (todos) => {
-  await fs.writeFile(
+  return await fs.writeFile(
     path.join(__dirname, todoFilePath),
     JSON.stringify(todos, null, 2) + "\n",
     (err) => {
@@ -59,37 +76,57 @@ app.get("/", (req, res) => {
 });
 
 app.get("/todos", (req, res) => {
-  try {
-    const todos = getTodos();
-
-    res.setHeader("Content-Type", "application/json").send(todos);
-  } catch (err) {
-    next(err);
-  }
+  getTodos()
+    .then((todos) => {
+      res.setHeader("Content-Type", "application/json").send(todos);
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
 //Add GET request with path '/todos/overdue'
 app.get("/todos/overdue", (req, res) => {
-  try {
-    const todos = getTodos().filter(
-      (todo) => new Date(todo.due) < new Date() && todo.completed === false
-    );
-
-    res.setHeader("Content-Type", "application/json").send(todos);
-  } catch (err) {
-    next(err);
-  }
+  getTodos()
+    .then((todos) => {
+      todos = todos.filter(
+        (todo) => new Date(todo.due) < new Date() && todo.completed === false
+      );
+      res.setHeader("Content-Type", "application/json").send(todos);
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
 //Add GET request with path '/todos/completed'
 app.get("/todos/completed", (req, res) => {
-  try {
-    const todos = getTodos().filter((todo) => todo.completed === true);
+  const todos = getTodos()
+    .then((todos) => {
+      todos = todos.filter((todo) => todo.completed === true);
 
-    res.setHeader("Content-Type", "application/json").send(todos);
-  } catch (err) {
-    next(err);
-  }
+      res.setHeader("Content-Type", "application/json").send(todos);
+    })
+    .catch((err) => {
+      next(err);
+    });
+});
+
+app.get("/todos/:id", (req, res) => {
+  const id = req.params.id;
+  getTodos()
+    .then((todos) => {
+      const todo = todos.find((todo) => todo.id === id);
+
+      if (todo) {
+        res.setHeader("Content-Type", "application/json").send(todo);
+      } else {
+        res.status(404).send("Todo not found");
+      }
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
 //Add POST request with path '/todos'
@@ -99,103 +136,115 @@ app.post("/todos", (req, res) => {
   if (!newTodo.name || !newTodo.due) {
     res.status(400).send("Invalid request");
   } else {
-    const todos = getTodos();
-
-    newTodo.id = uuidv4();
-    newTodo.completed = false;
-    newTodo.created = new Date().toISOString();
-    todos.push(newTodo);
-    saveTodos(todos)
-      .then((value) => {
-        res
-          .setHeader("Content-Type", "application/json")
-          .status(201)
-          .send(newTodo);
+    const todos = getTodos()
+      .then((todos) => {
+        newTodo.id = uuidv4();
+        newTodo.completed = false;
+        newTodo.created = new Date().toISOString();
+        todos.push(newTodo);
+        saveTodos(todos).then((value) => {
+          res
+            .setHeader("Content-Type", "application/json")
+            .status(201)
+            .send(newTodo);
+        });
       })
-      .catch((err) => next(err));
+      .catch((err) => {
+        next(err);
+      });
   }
 });
 
 //Add PATCH request with path '/todos/:id
 app.patch("/todos/:id", (req, res) => {
-  try {
-    const id = req.params.id;
-    const todos = getTodos();
-    const todo = todos.find((todo) => todo.id === id);
+  const id = req.params.id;
+  getTodos()
+    .then((todos) => {
+      const todo = todos.find((todo) => todo.id === id);
 
-    if (todo) {
-      todo.name = req.body.name ?? todo.name;
-      todo.due = req.body.due ?? todo.due;
-      todo.completed = req.body.completed ?? todo.completed;
-      saveTodos(todos)
-        .then((value) => {
+      if (todo) {
+        todo.name = req.body.name ?? todo.name;
+        todo.due = req.body.due ?? todo.due;
+        todo.completed = req.body.completed ?? todo.completed;
+        saveTodos(todos).then((value) => {
           res.setHeader("Content-Type", "application/json").send(todo);
-        })
-        .catch((err) => next(err));
-    } else {
-      res.status(404).send("Todo not found");
-    }
-  } catch (err) {
-    next(err);
-  }
+        });
+      } else {
+        res.status(404).send("Todo not found");
+      }
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
 //Add POST request with path '/todos/:id/complete
 app.post("/todos/:id/complete", (req, res) => {
-  try {
-    const id = req.params.id;
-    const todos = getTodos();
-    const todo = todos.find((todo) => todo.id === id);
+  const id = req.params.id;
+  const todos = getTodos()
+    .then((todos) => {
+      const todo = todos.find((todo) => todo.id === id);
 
-    if (todo) {
-      todo.completed = true;
-      res.setHeader("Content-Type", "application/json").send(todo);
-    } else {
-      res.status(404).send("Todo not found");
-    }
-  } catch (err) {
-    next(err);
-  }
+      if (todo) {
+        todo.completed = true;
+        saveTodos(todos)
+          .then((value) => {
+            res.setHeader("Content-Type", "application/json").send(todo);
+          })
+          .catch((err) => next(err));
+      } else {
+        res.status(404).send("Todo not found");
+      }
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
 //Add POST request with path '/todos/:id/undo
 app.post("/todos/:id/undo", (req, res) => {
-  try {
-    const id = req.params.id;
-    const todos = getTodos();
-    const todo = todos.find((todo) => todo.id === id);
+  const id = req.params.id;
+  const todos = getTodos()
+    .then((todos) => {
+      const todo = todos.find((todo) => todo.id === id);
 
-    if (todo) {
-      todo.completed = false;
-      res.setHeader("Content-Type", "application/json").send(todo);
-    } else {
-      res.status(404).send("Todo not found");
-    }
-  } catch (err) {
-    next(err);
-  }
+      if (todo) {
+        todo.completed = false;
+        saveTodos(todos)
+          .then((value) => {
+            res.setHeader("Content-Type", "application/json").send(todo);
+          })
+          .catch((err) => next(err));
+      } else {
+        res.status(404).send("Todo not found");
+      }
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
 //Add DELETE request with path '/todos/:id
 app.delete("/todos/:id", (req, res) => {
-  try {
-    const id = req.params.id;
-    const todos = getTodos();
-    const index = todos.findIndex((todo) => todo.id === id);
+  const id = req.params.id;
+  const todos = getTodos()
+    .then((todos) => {
+      const index = todos.findIndex((todo) => todo.id === id);
 
-    if (index >= 0) {
-      todos.splice(index, 1)
-      saveTodos(todos)
-        .then((value) => {
-          res.send();
-        })
-        .catch((err) => next(err));
-    } else {
-      res.status(404).send("Todo not found");
-    }
-  } catch (err) {
-    next(err);
-  }
+      if (index >= 0) {
+        todos.splice(index, 1);
+        saveTodos(todos)
+          .then((value) => {
+            res.send();
+          })
+          .catch((err) => next(err));
+      } else {
+        res.status(404).send("Todo not found");
+      }
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
 // Attach error handling middleware after all regular middleware
