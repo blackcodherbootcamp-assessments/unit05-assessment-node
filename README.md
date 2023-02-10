@@ -10,14 +10,6 @@ Ensure your finished repository meets all of the [Assessment Criteria](#assessme
 
 ## Assessment Criteria
 
-1. The root URL should serve/return the file `index.html`. The `index.html` file should outline the expected endpoints for the service.
-
-1. The `index.html` file should reference a `favicon.ico`, `logo.png` and a `styles.css` file.
-
-1. Add a `<title>` tag that includes your name e.g. Welcome to `Monica's` Todo List API
-
-1. Include the table of endpoints below in your homepage (`index.html`) as a description of how to consume (use) your API.
-
 1. Add the functionality for all the endpoints described below to your API:
 
 | Method | URL | Description | Example URL | Request Body | Status Code | Response Body |
@@ -90,7 +82,7 @@ npm start
 
 6. If configured correctly, when you visit the local URL: `http://localhost:8080/`, you will see the following page:
 
-![index.html API Homepage](node-assessment.png "Title")
+<img src="node-assessment.png" alt="index.html screenshot" width="500">
 
 7. To complete the assessment make additions to the `index.js` file to return the expected data. Review the assessment criteria for detailed information on expected endpoints for your completed API.
 

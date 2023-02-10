@@ -1,0 +1,7 @@
+main section {
+  overflow-x: scroll;
+}
+
+body {
+    grid-template-columns: 1fr 90% 1fr;
+}
