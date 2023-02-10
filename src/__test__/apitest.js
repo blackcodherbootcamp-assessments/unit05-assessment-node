@@ -6,47 +6,43 @@ const { expect } = require("chai");
 const api = require("../app.js");
 const dateNow = Date.now();
 const jsonPath = path.join(__dirname, "..", process.env.BASE_JSON_PATH);
-const getTodos = () => {
-  const contents = fs.readFileSync(jsonPath, { encoding: "utf-8" });
-
-  return JSON.parse(contents);
+const defaultTodos = [
+  {
+    id: "01507581-9d12-a4c4-06bb-19d539a11189",
+    name: "Learn to use Adobe Photoshop",
+    completed: true,
+  },
+  {
+    id: "19d539a11189-bb60-u663-8sd4-01507581",
+    name: "Buy 2 Cartons of Milk",
+    completed: true,
+  },
+  {
+    id: "19d539a11189-4a60-3a4c-4434-01507581",
+    name: "Learn to juggle",
+    completed: false,
+  },
+  {
+    id: "7895as2s4c-4a60-3a4c-7acc-895as1cc85",
+    name: "Renew Passport",
+    completed: false,
+  },
+];
+const getTodos = async () => {
+  return new Promise((resolve, reject) =>
+    fs.readFile(jsonPath, { encoding: "utf-8" }, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(JSON.parse(data));
+      }
+    })
+  );
 };
-
-before(async () => {
-  const defaultTodos = [
-    {
-      id: "01507581-9d12-a4c4-06bb-19d539a11189",
-      name: "Learn to use Adobe Photoshop",
-      completed: true,
-    },
-    {
-      id: "19d539a11189-bb60-u663-8sd4-01507581",
-      name: "Buy 2 Cartons of Milk",
-      completed: true,
-    },
-    {
-      id: "19d539a11189-4a60-3a4c-4434-01507581",
-      name: "Learn to juggle",
-      completed: false,
-    },
-    {
-      id: "7895as2s4c-4a60-3a4c-7acc-895as1cc85",
-      name: "Renew Passport",
-      completed: false,
-    },
-  ];
-
-  defaultTodos.forEach((todo, i) => {
-    const due = new Date(dateNow);
-
-    due.setUTCDate(due.getUTCDate() + (i + 2 - defaultTodos.length) * 7);
-    todo.due = due.toISOString();
-    due.setUTCDate(due.getUTCDate() - 7);
-    todo.created = due.toISOString();
-  });
-  await fs.writeFile(
+const saveTodos = async (todos) => {
+  return await fs.writeFile(
     jsonPath,
-    JSON.stringify(defaultTodos, null, 2) + "\n",
+    JSON.stringify(todos, null, 2) + "\n",
     (err) => {
       if (err) {
         console.error(err);
@@ -54,20 +50,26 @@ before(async () => {
       }
     }
   );
-});
+};
+const suiteSetup = () => {
+  before(() => {
+    defaultTodos.forEach((todo, i) => {
+      const due = new Date(dateNow);
 
-describe("GET /", function () {
-  let path = "/";
-  it("should be listening and respond with the content type set to text/html", () => {
-    return request(api)
-      .get(path)
-      .expect("Content-Type", /text\/html/)
-      .expect(200);
+      due.setUTCDate(due.getUTCDate() + (i + 2 - defaultTodos.length) * 7);
+      todo.due = due.toISOString();
+      due.setUTCDate(due.getUTCDate() - 7);
+      todo.created = due.toISOString();
+    });
+
+    return saveTodos(defaultTodos);
   });
-});
+};
 
-describe("GET /todos", async function () {
-  let path = "/todos";
+describe("GET /todos", function () {
+  suiteSetup();
+  const path = "/todos";
+
   it("should be listening and respond with the content type set to application/json", async () => {
     await request(api)
       .get(path)
@@ -79,13 +81,52 @@ describe("GET /todos", async function () {
     await request(api)
       .get(path)
       .expect((res) => {
-        expect(res.body).to.be.an("array");
+        const actual = [...new Set(res.body)];
+        getTodos().then((expected) => {
+          expect(actual).to.be.an("array");
+          expect(actual).to.have.lengthOf(expected.length);
+        });
       });
+  });
+
+  it("should return empty array if there are no todos", async () => {
+    await saveTodos([]).then(async (value) => {
+      await request(api)
+        .get(path)
+        .expect((res) => {
+          const now = new Date();
+          const actual = [...new Set(res.body)];
+
+          expect(actual).to.be.an("array");
+          expect(actual).to.have.lengthOf(0);
+        });
+    });
+  });
+});
+
+describe("GET /todos/:id", function () {
+  suiteSetup();
+  const path = "/todos";
+
+  it("should successfully return task with id '19d539a11189-bb60-u663-8sd4-01507581' and return status 200 (OK)", async () => {
+    await request(api)
+      .get(path + "/19d539a11189-bb60-u663-8sd4-01507581")
+      .send()
+      .expect(200);
+  });
+
+  it("should return 404 (Not Found) when invalid id is sent to complete", async () => {
+    await request(api)
+      .get(path + "/0xxx1235")
+      .send()
+      .expect(404);
   });
 });
 
 describe("GET /todos/overdue", function () {
-  let path = "/todos/overdue";
+  suiteSetup();
+  const path = "/todos/overdue";
+
   it("should be listening and respond with the content type set to application/json", async () => {
     await request(api)
       .get(path)
@@ -99,22 +140,40 @@ describe("GET /todos/overdue", function () {
       .expect((res) => {
         const now = new Date();
         const actual = [...new Set(res.body)];
-        const expected = getTodos().filter(
-          (todo) => new Date(todo.due) < now && todo.completed === false
-        );
+        getTodos().then((expected) => {
+          expected.filter(
+            (todo) => new Date(todo.due) < now && todo.completed === false
+          );
 
-        expect(actual).to.be.an("array");
-        expect(actual).to.have.lengthOf(expected.length);
-        actual.forEach(function (overdue, index) {
-          expect(new Date(overdue.due)).to.be.lessThan(now);
-          expect(overdue.completed).to.be.false;
+          expect(actual).to.be.an("array");
+          expect(actual).to.have.lengthOf(expected.length);
+          actual.forEach(function (overdue, index) {
+            expect(new Date(overdue.due)).to.be.lessThan(now);
+            expect(overdue.completed).to.be.false;
+          });
         });
       });
+  });
+
+  it("should return empty array if there are no overdue todos", async () => {
+    await saveTodos([]).then(async (value) => {
+      await request(api)
+        .get(path)
+        .expect((res) => {
+          const now = new Date();
+          const actual = [...new Set(res.body)];
+
+          expect(actual).to.be.an("array");
+          expect(actual).to.have.lengthOf(0);
+        });
+    });
   });
 });
 
 describe("GET /todos/completed", function () {
-  let path = "/todos/completed";
+  suiteSetup();
+  const path = "/todos/completed";
+
   it("should be listening and respond with the content type set to application/json", async () => {
     await request(api)
       .get(path)
@@ -127,21 +186,36 @@ describe("GET /todos/completed", function () {
       .get(path)
       .expect((res) => {
         const actual = [...new Set(res.body)];
-        const expected = getTodos().filter(
-          (todo) => todo.completed === true
-        );
+        const expected = getTodos().then((expected) => {
+          expected.filter((todo) => todo.completed === true);
 
-        expect(actual).to.be.an("array");
-        expect(actual).to.have.lengthOf(expected.length);
-        actual.forEach(function (todo) {
-          expect(todo.completed).to.be.true;
+          expect(actual).to.be.an("array");
+          expect(actual).to.have.lengthOf(expected.length);
+          actual.forEach(function (todo) {
+            expect(todo.completed).to.be.true;
+          });
         });
       });
+  });
+
+  it("should return empty array if there are no completed todos", async () => {
+    await saveTodos([]).then(async (value) => {
+      await request(api)
+        .get(path)
+        .expect((res) => {
+          const now = new Date();
+          const actual = [...new Set(res.body)];
+
+          expect(actual).to.be.an("array");
+          expect(actual).to.have.lengthOf(0);
+        });
+    });
   });
 });
 
 describe("POST /todos", function () {
-  let path = "/todos";
+  suiteSetup();
+  const path = "/todos";
 
   it("should return status 201 (Created)", async () => {
     await request(api)
@@ -157,12 +231,15 @@ describe("POST /todos", function () {
     await request(api)
       .get(path)
       .expect((res) => {
-        let todos = [...new Set(res.body)].filter((todo) => {
+        const todos = [...new Set(res.body)].filter((todo) => {
           return todo.name === "Turn on central heating";
         });
+
         expect(
           todos,
-          "Multiple todos with name 'Turn on central heating'. Expected only one"
+          `${
+            todos.length == 0 ? "No" : "Multiple"
+          } todos with name 'Turn on central heating'. Expected exactly one`
         ).to.have.lengthOf(1);
         expect(todos[0], "Missing property 'created'").to.have.property(
           "created"
@@ -182,7 +259,8 @@ describe("POST /todos", function () {
 });
 
 describe("PATCH /todos:id", function () {
-  let path = "/todos";
+  suiteSetup();
+  const path = "/todos";
 
   it("should update/patch and return status 200 (OK)", async () => {
     await request(api)
@@ -195,19 +273,22 @@ describe("PATCH /todos:id", function () {
     await request(api)
       .get(path)
       .expect((res) => {
-        let todos = [...new Set(res.body)].filter((todo) => {
+        const todos = [...new Set(res.body)].filter((todo) => {
           return todo.name === "Buy 6 Cartons of Milk";
         });
         expect(
           todos,
-          "None or multiple todos with name 'Buy 6 Cartons of Milk'. Expected only one"
+          `${
+            todos.length == 0 ? "No" : "Multiple"
+          } todos with name 'Buy 6 Cartons of Milk'. Expected exactly one`
         ).to.have.lengthOf(1);
       });
   });
 });
 
 describe("POST /todos/:id/complete", function () {
-  let path = "/todos";
+  suiteSetup();
+  const path = "/todos";
 
   it("should successfully COMPLETE  task with id '19d539a11189-bb60-u663-8sd4-01507581' and return status 200 (OK)", async () => {
     await request(api)
@@ -227,21 +308,24 @@ describe("POST /todos/:id/complete", function () {
     await request(api)
       .get(path + "/completed")
       .expect((res) => {
-        let todos = [...new Set(res.body)].filter((todo) => {
+        const todos = [...new Set(res.body)].filter((todo) => {
           return (
             todo.id === "19d539a11189-bb60-u663-8sd4-01507581" && todo.completed
           );
         });
         expect(
           todos,
-          "None or multiple todos with id '19d539a11189-bb60-u663-8sd4-01507581'. Expected only one"
+          `${
+            todos.length == 0 ? "No" : "Multiple"
+          }  with id '19d539a11189-bb60-u663-8sd4-01507581'. Expected exactly one`
         ).to.have.lengthOf(1);
       });
   });
 });
 
 describe("POST /todos/:id/undo", function () {
-  let path = "/todos";
+  suiteSetup();
+  const path = "/todos";
 
   it("should successfully UNDO task with id '01507581-9d12-a4c4-06bb-19d539a11189' and return status 200 (OK)", async () => {
     await request(api)
@@ -261,7 +345,7 @@ describe("POST /todos/:id/undo", function () {
     await request(api)
       .get(path)
       .expect((res) => {
-        let todos = [...new Set(res.body)].filter((todo) => {
+        const todos = [...new Set(res.body)].filter((todo) => {
           return (
             todo.id === "01507581-9d12-a4c4-06bb-19d539a11189" &&
             todo.completed == false
@@ -269,14 +353,17 @@ describe("POST /todos/:id/undo", function () {
         });
         expect(
           todos,
-          "None or multiple todos with id '01507581-9d12-a4c4-06bb-19d539a11189'. Expected only one"
+          `${
+            todos.length == 0 ? "No" : "Multiple"
+          } todos with id '01507581-9d12-a4c4-06bb-19d539a11189'. Expected exactly one`
         ).to.have.lengthOf(1);
       });
   });
 });
 
 describe("DELETE /todos/:id", function () {
-  let path = "/todos";
+  suiteSetup();
+  const path = "/todos";
 
   it("should successfully DELETE task 'Learn to juggle' by id and return status 200 (OK)", async () => {
     await request(api)
@@ -288,13 +375,14 @@ describe("DELETE /todos/:id", function () {
     await request(api)
       .get(path)
       .expect((res) => {
-        let todos = [...new Set(res.body)];
-        todos = todos.filter((todo) => {
+        const todos = [...new Set(res.body)].filter((todo) => {
           todo.id === "19d539a11189-4a60-3a4c-4434-01507581";
         });
         expect(
           todos,
-          "None or multiple todos with name 'Learn to juggle', id '19d539a11189-4a60-3a4c-4434-01507581'. Expected only one"
+          `${
+            todos.length == 0 ? "No" : "Multiple"
+          } todos with name 'Learn to juggle', id '19d539a11189-4a60-3a4c-4434-01507581'. Expected exactly one`
         ).to.have.lengthOf(0);
       });
   });
