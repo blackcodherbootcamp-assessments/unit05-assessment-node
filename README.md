@@ -86,9 +86,12 @@ npm start
 
 7. To complete the assessment make additions to the `index.js` file to return the expected data. Review the assessment criteria for detailed information on expected endpoints for your completed API.
 
+## Testing
+
+You can execute the autograding tests locally to check your progress by running `npm run test`.
+
+**IMPORTANT:** Do NOT modify any files in the `__test__` directory!
+
 ## How to submit
 
-Commit all files and folders to the repo and push to your remote repo for assessment.
-
-
-
+Commit all changes and push/merge to the main branch of your GitHub remote for assessment.
