@@ -163,8 +163,8 @@ app.patch("/todos/:id", (req, res) => {
       const todo = todos.find((todo) => todo.id === id);
 
       if (todo) {
-        todo.name = req.body.name ?? todo.name;
-        todo.due = req.body.due ?? todo.due;
+        todo.name = req.body.name || todo.name;
+        todo.due = req.body.due || todo.due;
         todo.completed = req.body.completed ?? todo.completed;
         saveTodos(todos).then((value) => {
           res.setHeader("Content-Type", "application/json").send(todo);

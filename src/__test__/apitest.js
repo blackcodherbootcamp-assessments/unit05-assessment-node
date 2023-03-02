@@ -290,7 +290,7 @@ describe("POST /todos/:id/complete", function () {
   suiteSetup();
   const path = "/todos";
 
-  it("should successfully COMPLETE  task with id '19d539a11189-bb60-u663-8sd4-01507581' and return status 200 (OK)", async () => {
+  it("should successfully COMPLETE task with id '19d539a11189-bb60-u663-8sd4-01507581' and return status 200 (OK)", async () => {
     await request(api)
       .post(path + "/19d539a11189-bb60-u663-8sd4-01507581/complete")
       .send()

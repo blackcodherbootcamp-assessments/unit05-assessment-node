@@ -19,8 +19,8 @@ Ensure your finished repository meets all of the [Assessment Criteria](#assessme
 | `GET` | `/todos/:id` | Return a specific todo with the corresponding `id` | `http://localhost:8080/todos/01507581-9d12-4c3a-bb60-19d539a11189` | | 200 or 404 if id not found | `{"id":"01507581-9d12-4c3a-bb60-19d539a11189","name":"Learn to use Adobe Photoshop","created":"2021-11-20T18:25:43.511Z","due":"2021-12-23T23:05:03.352Z","completed":false}` |
 | `GET` | `/todos/overdue` | Return a list of __overdue__ todos or an empty list if there are no overdue todos. Todos can be filtered based on their `due` date attribute |`http://localhost:8080/todos/overdue` | | 200 |`[]` or `[{todo1},{todo2},{...}]` |
 | `GET` | `/todos/completed` | Return a list of __completed__ todos or an empty list, if no todos have been completed. Todos can be filtered based on their `due` date attribute. | `http://localhost:8080/todos/completed` | | 200 | `[]` or `[{todo1},{todo2},{...}]` |
-| `POST`* | `/todos` | Add a new todo to the todo list | `http://localhost:8080/todos` | `{'name' : 'Buy oatmilk x 2', 'due':'2021-11-20T18:25:43.511Z'}` | 201 (Created), 400 (Bad Request) if incorrect data submitted| |
-| `PATCH`* | `/todos/:id` | Edit the `name` and/or `due` date attributes of a todo.  | `http://localhost:8080/todos/:9d127581-0150-4c3a-bb60-1118919d539a` | `{"name":"Buy 3 Cartons of Oat Milk","due":"2021-12-23T18:25:43.511Z"}` | 200 (OK) or 404 (Not Found) if invalid id or request attributes |  | `http://localhost:8080/todos/01507581-9d12-4c3a-bb60-19d539a11189` | | 200 | |
+| `POST`* | `/todos` | Add a new todo to the todo list | `http://localhost:8080/todos` | `{"name" : "Buy oatmilk x 2", "due":"2021-11-20T18:25:43.511Z"}` | 201 (Created), 400 (Bad Request) if incorrect data submitted| |
+| `PATCH`* | `/todos/:id` | Edit the `name` and/or `due` date attributes of a todo.  | `http://localhost:8080/todos/:9d127581-0150-4c3a-bb60-1118919d539a` | `{"name":"Buy 3 Cartons of Oat Milk","due":"2021-12-23T18:25:43.511Z"}` | 200 (OK) or 404 (Not Found) if invalid id |  | `http://localhost:8080/todos/01507581-9d12-4c3a-bb60-19d539a11189` | | 200 | |
 | `POST`* | `/todos/:id/complete` | Update todo, set attribute complete to `true` | `http://localhost:8080/todos/01507581-9d12-4c3a-bb60-19d539a11189/complete` | | 200 (OK) or 404 (Not Found) if invalid id | |
 | `POST`* | `/todos/:id/undo` | Update todo, set attribute complete to `false` |`http://localhost:8080/todos/01507581-9d12-4c3a-bb60-19d539a11189/undo` | | 200 (OK) or 404 (Not Found) if invalid id | |
 | `DELETE`* | `todos/:id` | Deletes a todo by `id` |`http://localhost:8080/todos/01507581-9d12-4c3a-bb60-19d539a11189` | | 200 (OK) or 404 (Not Found) if invalid id | |
@@ -86,9 +86,12 @@ npm start
 
 7. To complete the assessment make additions to the `index.js` file to return the expected data. Review the assessment criteria for detailed information on expected endpoints for your completed API.
 
+## Testing
+
+You can execute the autograding tests locally to check your progress by running `npm run test`.
+
+**IMPORTANT:** Do NOT modify any files in the `__test__` directory!
+
 ## How to submit
 
-Commit all files and folders to the repo and push to your remote repo for assessment.
-
-
-
+Commit all changes and push/merge to the main branch of your GitHub remote for assessment.
